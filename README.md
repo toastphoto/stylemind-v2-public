@@ -18,6 +18,10 @@ environment variables such as `STYLEMIND_REFERENCE_SOURCE`,
 the app and the generic unit tests, but do not expect the private reference-template
 visual QA pipeline to be fully reproducible.
 
+For architecture review, see:
+
+- `docs/public_review/STYLE_SYSTEM_COMPILER_ROADMAP.md`
+
 ## 快速开始
 
 ### 1. 环境要求
