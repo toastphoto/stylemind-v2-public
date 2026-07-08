@@ -47,6 +47,7 @@ Private implementation progress on 2026-07-08:
 - The private Agent API now has an initial content-only ContentPlan layer for per-page message, slots, density, asset needs, and fit warnings before visual selection.
 - The private workbench Page Manifest now shows ContentPlan and StylePack planning fields as separate layers.
 - The private workbench now has initial lockable StylePack and TemplateSkill planning controls with deterministic fit scoring.
+- The private reference-template export path now consumes locked TemplateSkill choices when they map to the cleaned template registry and reports lock consumption for QA.
 - The public repo does not include the private seed JSON or private reference assets.
 
 ## Main Decisions
@@ -90,10 +91,10 @@ Visual changes should be reviewed through side-by-side outputs:
 
 ## Next Small Build Targets
 
-1. Wire locked StylePack/TemplateSkill choices into the export path and QA status.
+1. Add stronger visual QA evidence for locked selections through rendered PPTX contact sheets.
 2. Mature ContentPlan fit scoring against real reference templates without letting it choose visual templates directly.
 3. Promote template selection from scripts into the main workbench planning path.
-4. Add stronger visual QA evidence for locked selections through rendered PPTX contact sheets.
+4. Surface locked-selection QA status in the workbench.
 5. Keep public repo updates sanitized and review-oriented.
 
 ## Review Boundary
