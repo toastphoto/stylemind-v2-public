@@ -49,7 +49,9 @@ Private implementation progress on 2026-07-08:
 - The private workbench now has initial lockable StylePack and TemplateSkill planning controls with deterministic fit scoring.
 - The private reference-template export path now consumes locked TemplateSkill choices when they map to the cleaned template registry and reports lock consumption for QA.
 - The private workbench now has a selected-page rendered QA path for locked TemplateSkill choices, returning a contact sheet and report for human visual review.
+- The private workbench now persists selected-page rendered QA state back to the page/session and surfaces it in the planning manifest.
 - The private reference-template renderer now compacts orphan template slides/media after PPTX generation so template-copy outputs do not carry inactive source assets.
+- A live private smoke test confirmed selected-page QA can write back to a temporary outline session and reappear in the Agent planning payload; the same smoke confirmed the export path is not using a full-slide image-generation model for the QA state.
 - The public repo does not include the private seed JSON or private reference assets.
 
 ## Main Decisions
@@ -93,7 +95,7 @@ Visual changes should be reviewed through side-by-side outputs:
 
 ## Next Small Build Targets
 
-1. Persist rendered QA evidence and status per page after selected-page contact-sheet generation.
+1. Use persisted rendered QA evidence to improve TemplateSkill fit, capacity, and visual review status.
 2. Mature ContentPlan fit scoring against real reference templates without letting it choose visual templates directly.
 3. Promote template selection from scripts into the main workbench planning path.
 4. Improve visual fit and placeholder-capacity scoring using rendered QA evidence.
