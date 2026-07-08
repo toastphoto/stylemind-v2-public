@@ -44,6 +44,8 @@ Private implementation progress on 2026-07-08:
 - The private repo now has a first StylePack seed-library builder.
 - The private seed library links curated company reference sample pages, cleaned TemplateSkill candidates, and supplemental DashiAI-style component seeds.
 - The Agent workbench receives per-page StylePack matches in its planning payload.
+- The private Agent API now has an initial content-only ContentPlan layer for per-page message, slots, density, asset needs, and fit warnings before visual selection.
+- The private workbench Page Manifest now shows ContentPlan and StylePack planning fields as separate layers.
 - The public repo does not include the private seed JSON or private reference assets.
 
 ## Main Decisions
@@ -88,9 +90,9 @@ Visual changes should be reviewed through side-by-side outputs:
 ## Next Small Build Targets
 
 1. Continue maturing the private StylePack seed library into real template-fit scoring and selectable workbench controls.
-2. Add a ContentPlan schema separate from RenderPlan.
+2. Mature ContentPlan fit scoring against real reference templates without letting it choose visual templates directly.
 3. Promote template selection from scripts into the main workbench planning path.
-4. Show page role, StylePack, TemplateSkill, asset slots, and QA status in the workbench.
+4. Add selectable/lockable StylePack and TemplateSkill controls plus QA status in the workbench.
 5. Keep public repo updates sanitized and review-oriented.
 
 ## Review Boundary
