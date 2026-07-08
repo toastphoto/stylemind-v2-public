@@ -1,0 +1,2256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StyleMind v2 - AI对话式PPT生成</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-light: #e0e7ff;
+            --bg-main: #f8fafc;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .logo-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-main);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border-light);
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+
+        .content-header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 20px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .content-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .content-header p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Safari / 局域网访问提示 */
+        .access-banner {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .access-banner code {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 2px 6px;
+            border-radius: 6px;
+            color: var(--text-primary);
+        }
+        .access-banner .btn {
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+
+        .content-body {
+            padding: 24px;
+        }
+
+        /* 页面切换 */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 主界面两栏布局 */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            height: calc(100vh - 140px);
+        }
+
+        .chat-section {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: var(--bg-main);
+        }
+
+        .chat-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            font-family: inherit;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .preview-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .preview-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .preview-card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-light);
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .preview-card-body {
+            padding: 20px;
+        }
+
+        /* 消息气泡 */
+        .message {
+            margin-bottom: 16px;
+            max-width: 85%;
+        }
+
+        .message-user {
+            margin-left: auto;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: var(--radius-lg);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .message-user .message-bubble {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-ai .message-bubble {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        /* 图片预览 */
+        .preview-image {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: var(--bg-main);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            overflow: hidden;
+        }
+
+        .preview-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* 图片画廊 */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(var(--thumb-min, 220px), 1fr));
+            gap: 12px;
+            max-height: 360px;
+            overflow-y: auto;
+        }
+
+        .gallery-toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .gallery-toolbar .left,
+        .gallery-toolbar .right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .gallery-toolbar label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .gallery-toolbar select,
+        .gallery-toolbar input[type="range"] {
+            accent-color: var(--primary);
+        }
+        .gallery-pager {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .gallery-item {
+            aspect-ratio: 16/9;
+            background: var(--bg-main);
+            border-radius: var(--radius);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-item-index {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        /* 图片放大模态框 */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+        }
+        .image-modal.active {
+            display: flex;
+        }
+        .image-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+        }
+
+        /* Tab 切换 */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-main);
+            padding: 4px;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            background: var(--bg-card);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* 按钮 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-main);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-light);
+        }
+
+        .btn-danger {
+            background: #fef2f2;
+            color: var(--error);
+            border: 1px solid #fecaca;
+        }
+
+        .btn-large {
+            padding: 14px 24px;
+            font-size: 15px;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* 状态显示 */
+        .status-box {
+            background: var(--bg-main);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        .status-success {
+            color: var(--success);
+        }
+
+        .status-error {
+            color: var(--error);
+        }
+
+        /* 卡片 */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* 表单元素 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: var(--bg-main);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        select.form-input {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+
+        /* 文件上传 */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--bg-main);
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 16px;
+            color: var(--text-muted);
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* 进度条 */
+        .progress-container {
+            margin: 16px 0;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border-light);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #8b5cf6);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        /* 大纲显示 */
+        .outline-display {
+            background: var(--bg-main);
+            border-radius: var(--radius);
+            padding: 16px;
+            font-size: 13px;
+            line-height: 1.8;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border-light);
+        }
+
+        .outline-item {
+            padding: 8px 12px;
+            margin-bottom: 4px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border-left: 3px solid var(--primary);
+        }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .preview-section {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* 加载动画 */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">S</div>
+                    <div>
+                        <div class="logo-text">StyleMind</div>
+                        <div class="logo-subtitle">v2.0</div>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-page="main">
+                    <span class="nav-icon">💬</span>
+                    <span>主界面</span>
+                </div>
+                <div class="nav-item" data-page="knowledge">
+                    <span class="nav-icon">📚</span>
+                    <span>知识库管理</span>
+                </div>
+                <a href="/upload" class="nav-item" style="text-decoration:none;color:inherit;">
+                    <span class="nav-icon">📤</span>
+                    <span>大纲上传</span>
+                </a>
+                <div class="nav-item" data-page="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span>设置</span>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                Made with ❤️ by StyleMind
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 主界面 -->
+            <div id="page-main" class="page active">
+                <div class="content-header">
+                    <h1>主界面</h1>
+                    <p>与 AI 对话生成 PPT 大纲，然后生成图片并导出</p>
+                    <div class="access-banner" id="accessBanner" style="display:none;">
+                        <div>
+                            Safari 打开地址：<code id="lanUrl">加载中...</code>
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <button class="btn btn-secondary" id="copyLanUrlBtn">复制</button>
+                            <a class="btn btn-primary" id="openLanUrlBtn" href="#" target="_blank" rel="noreferrer">打开</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-body">
+                    <div class="main-layout">
+                        <!-- 左侧：对话区域 -->
+                        <div class="chat-section">
+                            <div class="chat-messages" id="chatMessages">
+                                <div class="message message-ai">
+                                    <div class="message-bubble">
+                                        你好！我是 StyleMind AI 助手。我可以帮你创建专业的 PPT。
+                                        <br><br>
+                                        请告诉我：
+                                        <br>• 你想做什么主题的 PPT？
+                                        <br>• 目标受众是谁？
+                                        <br>• 大概需要多少页？
+                                    </div>
+                                    <div class="message-time">刚刚</div>
+                                </div>
+                            </div>
+                            <div class="chat-input-area">
+                                <div class="chat-input-row">
+                                    <textarea class="chat-input" id="chatInput" placeholder="输入大纲或对话...（例如：帮我创建一个关于AI技术发展的PPT，面向企业高管，10页左右）" rows="2"></textarea>
+                                    <button class="btn btn-primary" id="sendBtn">发送</button>
+                                    <button class="btn btn-secondary" id="clearChatBtn">清空</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 右侧：预览和操作区域 -->
+                        <div class="preview-section">
+                            <!-- 大纲显示 -->
+                            <div class="preview-card">
+                                <div class="preview-card-header">📋 当前大纲</div>
+                                <div class="preview-card-body">
+                                    <div class="outline-display" id="outlineDisplay">
+                                        <div style="color: var(--text-muted); text-align: center; padding: 20px;">
+                                            开始对话生成大纲...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 图片预览 -->
+                            <div class="preview-card">
+                                <div class="tabs">
+                                    <div class="tab active" data-preview-tab="current">当前预览</div>
+                                    <div class="tab" data-preview-tab="gallery">所有图片</div>
+                                </div>
+                                <div class="preview-card-body">
+                                    <div id="previewCurrent">
+                                        <div class="preview-image" id="currentPreview">
+                                            <span>暂无预览</span>
+                                        </div>
+                                    </div>
+                                    <div id="previewGallery" class="hidden">
+                                        <div class="gallery-toolbar">
+                                            <div class="left">
+                                                <label>缩略图</label>
+                                                <input type="range" id="thumbSize" min="180" max="360" value="260">
+                                                <label>每页</label>
+                                                <select id="pageSize">
+                                                    <option value="24">24</option>
+                                                    <option value="48">48</option>
+                                                    <option value="96">96</option>
+                                                </select>
+                                            </div>
+                                            <div class="right">
+                                                <button class="btn btn-secondary" id="downloadImagesBtn">⬇️ 下载全部图片</button>
+                                                <div class="gallery-pager">
+                                                    <button class="btn btn-secondary" id="prevPageBtn">上一页</button>
+                                                    <span id="pageInfo">1/1</span>
+                                                    <button class="btn btn-secondary" id="nextPageBtn">下一页</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="gallery-grid" id="galleryGrid">
+                                            <!-- 图片将在这里显示 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 操作按钮 -->
+                            <button class="btn btn-primary btn-large" id="generateImagesBtn">
+                                🎨 根据大纲生成图片
+                            </button>
+                            <button class="btn btn-secondary btn-large" id="exportPdfBtn">
+                                📄 导出PDF
+                            </button>
+
+                            <!-- 风格选择对话框 -->
+                            <div id="styleModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+                                <div class="modal-content" style="background:white; padding:24px; border-radius:12px; width:90%; max-width:500px; max-height:80vh; overflow-y:auto;">
+                                    <h3 style="margin-bottom:16px;">🎨 选择图片风格</h3>
+
+                                    <div style="margin-bottom:16px;">
+                                        <label style="display:block; margin-bottom:8px; font-weight:500;">品牌名称：</label>
+                                        <input type="text" id="brandName" placeholder="例如：余额宝、支付宝、微信、Apple、Nike..." style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                                        <p style="font-size:12px; color:#666; margin-top:4px;">AI会自动识别品牌并应用对应的品牌色系</p>
+                                    </div>
+
+                                    <div style="margin-bottom:16px;">
+                                        <label style="display:block; margin-bottom:8px; font-weight:500;">品牌色系（可自定义）：</label>
+                                        <input type="text" id="colorScheme" placeholder="例如：蓝色系、橙色系、金色系、红色系、绿色系..." style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                                        <p style="font-size:12px; color:#666; margin-top:4px;">留空则根据品牌自动识别，或填写自定义色系</p>
+                                    </div>
+
+                                    <div style="margin-bottom:16px;">
+                                        <label style="display:block; margin-bottom:8px; font-weight:500;">风格描述（可选）：</label>
+                                        <textarea id="styleDescription" placeholder="例如：科技感、简约商务、活泼年轻、高端大气、复古怀旧、极简主义..." style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; min-height:60px; resize:vertical;"></textarea>
+                                    </div>
+
+                                    <div style="margin-bottom:16px;">
+                                        <label style="display:block; margin-bottom:8px; font-weight:500;">参考图片（可选）：</label>
+                                        <input type="file" id="styleReferenceImage" accept="image/*" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                                        <div id="styleImagePreview" style="margin-top:8px; max-height:150px; overflow:hidden; display:none;">
+                                            <img id="stylePreviewImg" style="max-width:100%; max-height:150px; border-radius:6px;">
+                                        </div>
+                                        <p style="font-size:12px; color:#666; margin-top:4px;">上传参考图后，AI会分析图片风格并应用到生成的PPT中</p>
+                                    </div>
+
+                                    <div style="margin-top: 16px;">
+                                        <label style="display:block; font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">📦 产品参考图 <span style="font-weight:400; color: var(--text-muted); font-size: 11px;">（AI 会严格保持产品外形不变）</span></label>
+                                        <div id="mainProductImageZone" style="border: 2px dashed var(--border); border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('mainProductImageInput').click()">
+                                            <div style="font-size: 28px; margin-bottom: 4px;">📷</div>
+                                            <div style="font-size: 13px; color: var(--text-primary);">点击上传产品图</div>
+                                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">PNG / JPG / PDF</div>
+                                            <input type="file" id="mainProductImageInput" accept="image/*,.pdf" style="display:none">
+                                        </div>
+                                        <div id="mainProductImagePreview" style="display:none; margin-top: 8px; display: flex; align-items: center; gap: 8px; padding: 8px; background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 8px;">
+                                            <img id="mainProductImageImg" src="" alt="产品图" style="max-width: 180px; max-height: 120px; border-radius: 6px;">
+                                            <button type="button" onclick="clearMainProductImage()" style="padding: 4px 12px; font-size: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); border-radius: 4px; cursor: pointer;">✕ 移除</button>
+                                        </div>
+                                    </div>
+
+                                    <div style="display:flex; gap:12px; justify-content:flex-end;">
+                                        <button class="btn btn-secondary" id="cancelStyleBtn">取消</button>
+                                        <button class="btn btn-primary" id="confirmStyleBtn">开始生成</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <a id="downloadLink" class="hidden">
+                                <button class="btn btn-primary btn-large">
+                                    ⬇️ 下载PDF
+                                </button>
+                            </a>
+
+                            <!-- 状态显示 -->
+                            <div class="status-box" id="mainStatus">准备就绪</div>
+
+                            <!-- 大纲生成进度（仅在生成大纲时显示） -->
+                            <div class="progress-container" id="outlineProgressContainer" style="display: none; margin-top: 12px;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="outlineProgressFill" style="width: 0%"></div>
+                                </div>
+                                <div class="progress-text" id="outlineProgressText">准备生成大纲...</div>
+                            </div>
+
+                            <!-- 终止生成按钮 -->
+                            <button class="btn btn-danger" id="stopGenerateBtn" style="display:none; margin-top:12px;">
+                                ⏹ 终止生成
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 知识库管理 -->
+            <div id="page-knowledge" class="page">
+                <div class="content-header">
+                    <h1>知识库管理</h1>
+                    <p>上传 PPT 或 PDF 文件，AI会自动分析并学习其中的设计模式、排版逻辑和风格特征</p>
+                </div>
+                <div class="content-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalRecords">0</div>
+                            <div class="stat-label">总记录数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalFiles">0</div>
+                            <div class="stat-label">来源文件</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="llmAnalyzed">0</div>
+                            <div class="stat-label">LLM分析</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span>📤</span>
+                                <span>上传文件（支持 .pptx 和 .pdf）</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-zone" id="uploadZone">
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <div class="upload-text">点击或拖拽文件到此处上传</div>
+                                <div class="upload-hint">支持 .pptx 和 .pdf 格式</div>
+                                <input type="file" id="fileInput" accept=".pptx,.pdf">
+                            </div>
+                            <div id="fileList" style="margin-top: 16px;"></div>
+
+                            <div class="progress-container" id="progressContainer" style="display: none;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                                </div>
+                                <div class="progress-text" id="progressText">准备导入...</div>
+                            </div>
+
+                            <div style="margin-top: 16px; display: flex; gap: 12px;">
+                                <button class="btn btn-primary" id="importBtn" disabled>导入知识库</button>
+                                <button class="btn btn-secondary" id="viewKnowledgeBtn">查看知识库</button>
+                                <button class="btn btn-danger" id="clearKnowledgeBtn">清空知识库</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span>📊</span>
+                                <span>知识库状态</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="status-box" id="knowledgeStatus">点击"查看知识库"获取详细信息</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设置 -->
+            <div id="page-settings" class="page">
+                <div class="content-header">
+                    <h1>设置</h1>
+                    <p>配置您的 OpenAI 兼容 API</p>
+                </div>
+                <div class="content-body">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span>💬</span>
+                                <span>对话模型 API（大纲提炼、RAG检索）</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">API Base URL</label>
+                                <input type="text" class="form-input" id="chatApiUrl" placeholder="https://api.openai.com/v1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">API Key</label>
+                                <input type="password" class="form-input" id="chatApiKey" placeholder="sk-...">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">模型</label>
+                                <select class="form-input" id="chatModel">
+                                    <option value="chatgpt-4o-latest">chatgpt-4o-latest（推荐）</option>
+                                    <option value="gpt-4o">gpt-4o</option>
+                                    <option value="gpt-4o-mini">gpt-4o-mini</option>
+                                    <option value="deepseek-chat">deepseek-chat</option>
+                                    <option value="claude-3-5-sonnet">claude-3-5-sonnet</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn btn-secondary" id="testChatBtn">测试连接</button>
+                            </div>
+                            <div class="form-group" style="margin-top: 16px;">
+                                <div class="status-box" id="chatTestResult">点击"测试连接"测试对话模型 API</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span>🎨</span>
+                                <span>图片生成模型 API（生成PPT页面）</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">API Base URL</label>
+                                <input type="text" class="form-input" id="imageApiUrl" placeholder="https://api.openai.com/v1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">API Key</label>
+                                <input type="password" class="form-input" id="imageApiKey" placeholder="sk-...">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">模型</label>
+                                <select class="form-input" id="imageModel">
+                                    <option value="gpt-image-2">gpt-image-2（最新·推荐）</option>
+                                    <option value="gpt-image-1">gpt-image-1</option>
+                                    <option value="dall-e-3">dall-e-3</option>
+                                    <option value="qwen-image-max">qwen-image-max</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn btn-secondary" id="testImageBtn">测试连接</button>
+                            </div>
+                            <div class="form-group" style="margin-top: 16px;">
+                                <div class="status-box" id="imageTestResult">点击"测试连接"测试图片生成 API</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span>🔢</span>
+                                <span>嵌入模型 API（RAG知识库向量化）</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">API Base URL</label>
+                                <input type="text" class="form-input" id="embedApiUrl" placeholder="https://api.openai.com/v1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">API Key</label>
+                                <input type="password" class="form-input" id="embedApiKey" placeholder="sk-...">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">模型</label>
+                                <select class="form-input" id="embedModel">
+                                    <option value="text-embedding-3-small">text-embedding-3-small（推荐·性价比高）</option>
+                                    <option value="text-embedding-3-large">text-embedding-3-large</option>
+                                    <option value="text-embedding-ada-002">text-embedding-ada-002</option>
+                                </select>
+                            </div>
+                            <div style="display: flex: gap: 12px;">
+                                <button class="btn btn-secondary" id="testEmbedBtn">测试连接</button>
+                            </div>
+                            <div class="form-group" style="margin-top: 16px;">
+                                <div class="status-box" id="embedTestResult">点击"测试连接"测试嵌入模型 API</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button class="btn btn-primary btn-large" id="saveSettingsBtn">💾 保存所有设置</button>
+                        <button class="btn btn-secondary" id="copyToAllBtn">📋 复制到全部（使用同一API）</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ==================== 全局状态 ====================
+        let currentOutline = null;
+        let generatedImages = [];
+        let selectedFile = null;
+        let chatHistory = [];
+        let sessionId = null;
+
+        // ==================== 刷新不丢失：本地持久化 ====================
+        const STORAGE_KEY = 'stylemind_webui_state_v1';
+
+        function loadState() {
+            try {
+                // Safari 兼容：如果本地存储太大/异常导致白屏，可用 ?reset=1 强制清空
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('reset') === '1') {
+                    localStorage.removeItem(STORAGE_KEY);
+                    return;
+                }
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                // 如果历史缓存过大，Safari 解析会卡死（表现为一直转圈/超时），直接丢弃旧缓存
+                if (raw.length > 300000) { // ~300KB
+                    console.warn('state too large, clearing');
+                    localStorage.removeItem(STORAGE_KEY);
+                    return;
+                }
+                const state = JSON.parse(raw);
+                currentOutline = state.currentOutline ?? null;
+                chatHistory = Array.isArray(state.chatHistory) ? state.chatHistory : [];
+                // 防止 Safari 因 base64/过多图片导致卡死：仅保留“短 URL”，并限制数量
+                const imgs = Array.isArray(state.generatedImages) ? state.generatedImages : [];
+                generatedImages = imgs
+                    .filter(u => typeof u === 'string')
+                    .filter(u => u.length < 5000) // 只保留 /api/generated/... 这类短链接
+                    .slice(-500); // 最多保留最近 500 张
+                sessionId = state.sessionId || sessionId;
+            } catch (e) {
+                console.warn('loadState failed', e);
+                try { localStorage.removeItem(STORAGE_KEY); } catch (e2) {}
+            }
+        }
+
+        function saveState() {
+            try {
+                // Safari 兼容：只保存“短链接”图片，避免 base64 造成卡顿/超限
+                const safeImages = (generatedImages || [])
+                    .filter(u => typeof u === 'string')
+                    .filter(u => !u.startsWith('data:image'))
+                    .filter(u => u.length < 5000)
+                    .slice(-500);
+                const state = {
+                    sessionId,
+                    currentOutline,
+                    chatHistory: (chatHistory || []).slice(-200),
+                    generatedImages: safeImages
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.warn('saveState failed', e);
+            }
+        }
+
+        function renderChatHistory() {
+            // 重新渲染聊天记录（刷新后恢复）
+            if (!Array.isArray(chatHistory) || chatHistory.length === 0) return;
+            chatMessages.innerHTML = '';
+            for (const msg of chatHistory) {
+                const type = msg.role === 'user' ? 'user' : 'ai';
+                addMessage(msg.content, type, /*skipSave*/ true);
+            }
+        }
+
+        // 初始化 sessionId（用于关联本地状态）
+        function ensureSessionId() {
+            if (sessionId) return;
+            // 兼容不支持 crypto.randomUUID 的浏览器
+            sessionId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + '_' + Math.random().toString(16).slice(2);
+        }
+
+        // ==================== 页面切换 ====================
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const page = item.dataset.page;
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById(`page-${page}`).classList.add('active');
+            });
+        });
+
+        // ==================== 预览区 Tab 切换 ====================
+        document.querySelectorAll('[data-preview-tab]').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('[data-preview-tab]').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const tabName = tab.dataset.previewTab;
+                document.getElementById('previewCurrent').classList.toggle('hidden', tabName !== 'current');
+                document.getElementById('previewGallery').classList.toggle('hidden', tabName !== 'gallery');
+                // 仅在用户切到“所有图片”时再渲染，避免 Safari 首屏卡顿
+                if (tabName === 'gallery') {
+                    updateGallery();
+                }
+            });
+        });
+
+        // ==================== 聊天功能 ====================
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const clearChatBtn = document.getElementById('clearChatBtn');
+        const chatMessages = document.getElementById('chatMessages');
+        const outlineDisplay = document.getElementById('outlineDisplay');
+        const mainStatus = document.getElementById('mainStatus');
+        const outlineProgressContainer = document.getElementById('outlineProgressContainer');
+        const outlineProgressFill = document.getElementById('outlineProgressFill');
+        const outlineProgressText = document.getElementById('outlineProgressText');
+
+        // 启动时恢复状态
+        ensureSessionId();
+        loadState();
+        renderChatHistory();
+        updateOutlineDisplay();
+        // Safari 首屏不强制渲染全部缩略图，减少卡顿；切到“所有图片”tab 时再渲染
+        if (generatedImages.length > 0) {
+            showPreview(0);
+        }
+
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendBtn.addEventListener('click', sendMessage);
+
+        clearChatBtn.addEventListener('click', () => {
+            chatMessages.innerHTML = `
+                <div class="message message-ai">
+                    <div class="message-bubble">
+                        对话已清空。我可以帮你创建 PPT，请告诉我你的需求。
+                    </div>
+                    <div class="message-time">刚刚</div>
+                </div>
+            `;
+            chatHistory = [];
+            currentOutline = null;
+            generatedImages = [];
+            updateOutlineDisplay();
+            updateGallery();
+            saveState();
+        });
+
+        async function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // 添加用户消息
+            addMessage(text, 'user');
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+
+            mainStatus.textContent = 'AI 思考中...';
+            outlineProgressContainer.style.display = 'block';
+            outlineProgressFill.style.width = '0%';
+            outlineProgressText.textContent = '正在准备...';
+
+            try {
+                const response = await fetch('/api/chat-stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: text,
+                        history: chatHistory,
+                        outline: currentOutline
+                    })
+                });
+                // SSE：流式进度 + 最终结果
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let finalResult = null;
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const parts = buffer.split('\n');
+                    buffer = parts.pop();
+                    for (const line of parts) {
+                        if (!line.startsWith('data: ')) continue;
+                        let evt = null;
+                        try { evt = JSON.parse(line.slice(6)); } catch (e) { continue; }
+                        if (!evt) continue;
+
+                        if (evt.status === 'start') {
+                            outlineProgressText.textContent = evt.message || '开始生成...';
+                            if (typeof evt.percent === 'number') outlineProgressFill.style.width = `${evt.percent}%`;
+                        } else if (evt.status === 'progress') {
+                            outlineProgressText.textContent = evt.message || '处理中...';
+                            if (typeof evt.percent === 'number') outlineProgressFill.style.width = `${evt.percent}%`;
+                        } else if (evt.status === 'done') {
+                            finalResult = evt;
+                            outlineProgressText.textContent = evt.message || '完成';
+                            outlineProgressFill.style.width = '100%';
+                        } else if (evt.status === 'error') {
+                            finalResult = evt;
+                            outlineProgressText.textContent = evt.message || '失败';
+                        }
+                    }
+                }
+
+                if (finalResult && finalResult.status === 'done') {
+                    addMessage(finalResult.response, 'ai');
+                    if (finalResult.outline) {
+                        currentOutline = finalResult.outline;
+                        updateOutlineDisplay();
+                    }
+                    mainStatus.textContent = '就绪';
+                } else {
+                    addMessage('抱歉，处理失败：' + (finalResult?.message || '未知错误'), 'ai');
+                    mainStatus.textContent = '错误';
+                }
+            } catch (error) {
+                console.error('Chat stream error:', error);
+                addMessage('⚠️ 请求失败：' + (error.message || '服务连接中断，请检查后端服务是否正常运行') + '\n\n请确认服务已启动后重试。', 'ai');
+                mainStatus.textContent = '连接错误';
+            } finally {
+                // 稍微延迟隐藏，避免闪烁
+                setTimeout(() => {
+                    outlineProgressContainer.style.display = 'none';
+                }, 800);
+            }
+        }
+
+        function addMessage(text, type, skipSave=false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${type}`;
+            const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            messageDiv.innerHTML = `
+                <div class="message-bubble">${text.replace(/\n/g, '<br>')}</div>
+                <div class="message-time">${time}</div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // 保存到历史
+            chatHistory.push({ role: type === 'user' ? 'user' : 'assistant', content: text });
+            if (!skipSave) saveState();
+        }
+
+        function updateOutlineDisplay() {
+            if (!currentOutline) {
+                outlineDisplay.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">开始对话生成大纲...</div>';
+                saveState();
+                return;
+            }
+
+            let html = '';
+            if (currentOutline.pages) {
+                currentOutline.pages.forEach((page, i) => {
+                    html += `
+                        <div class="outline-item">
+                            <strong>第${i + 1}页:</strong> ${page.title || '未命名'}
+                            <br><small style="color: var(--text-muted);">${page.content ? page.content.substring(0, 50) + '...' : ''}</small>
+                        </div>
+                    `;
+                });
+            } else {
+                html = '<div class="outline-item">' + JSON.stringify(currentOutline, null, 2) + '</div>';
+            }
+            outlineDisplay.innerHTML = html;
+            saveState();
+        }
+
+        // 模拟响应（开发模式）
+        function generateMockResponse(text) {
+            if (text.includes('大纲') || text.includes('结构')) {
+                return '好的！我已经为你规划了 PPT 大纲，包含封面、目录、内容页和总结页。你可以在右侧查看详细结构。';
+            }
+            if (text.includes('修改') || text.includes('调整')) {
+                return '已根据你的要求调整大纲。请查看右侧更新后的结构。';
+            }
+            return '收到！我正在为你规划 PPT 结构。\n\n基于你的需求，我建议：\n• 封面页：突出主题\n• 目录页：清晰导航\n• 3-5个内容页：详细展开\n• 总结页：核心观点\n\n你可以继续调整或点击"生成图片"开始制作。';
+        }
+
+        function generateMockOutline() {
+            return {
+                title: 'AI 技术发展',
+                pages: [
+                    { title: '封面', type: 'cover', content: 'AI 技术发展报告' },
+                    { title: '目录', type: 'toc', content: '1. 概述 2. 技术突破 3. 应用场景 4. 未来展望' },
+                    { title: 'AI 概述', type: 'content', content: '人工智能的定义与发展历程' },
+                    { title: '技术突破', type: 'content', content: '大语言模型、计算机视觉等关键技术' },
+                    { title: '应用场景', type: 'content', content: '医疗、教育、金融等领域的应用' },
+                    { title: '总结', type: 'final', content: 'AI 正在改变我们的世界' }
+                ]
+            };
+        }
+
+        // ==================== 风格选择对话框 ====================
+        const styleModal = document.getElementById('styleModal');
+        const styleDescription = document.getElementById('styleDescription');
+        const styleReferenceImage = document.getElementById('styleReferenceImage');
+        const styleImagePreview = document.getElementById('styleImagePreview');
+        const stylePreviewImg = document.getElementById('stylePreviewImg');
+        const colorScheme = document.getElementById('colorScheme');
+        let currentStyleSettings = {};
+        let styleReferenceBase64 = '';
+
+        // 主页面产品图
+        let mainProductImageData = null;
+
+        // 产品图事件绑定
+        document.getElementById('mainProductImageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                mainProductImageData = ev.target.result;
+                document.getElementById('mainProductImageImg').src = mainProductImageData;
+                document.getElementById('mainProductImagePreview').style.display = 'flex';
+                document.getElementById('mainProductImageZone').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 拖拽支持
+        const mainProdZone = document.getElementById('mainProductImageZone');
+        mainProdZone.addEventListener('dragover', function(e) { e.preventDefault(); this.style.borderColor = 'var(--primary)'; });
+        mainProdZone.addEventListener('dragleave', function() { this.style.borderColor = 'var(--border)'; });
+        mainProdZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    mainProductImageData = ev.target.result;
+                    document.getElementById('mainProductImageImg').src = mainProductImageData;
+                    document.getElementById('mainProductImagePreview').style.display = 'flex';
+                    document.getElementById('mainProductImageZone').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function clearMainProductImage() {
+            mainProductImageData = null;
+            document.getElementById('mainProductImageImg').src = '';
+            document.getElementById('mainProductImagePreview').style.display = 'none';
+            document.getElementById('mainProductImageZone').style.display = 'block';
+            document.getElementById('mainProductImageInput').value = '';
+        }
+
+        // 参考图片预览
+        styleReferenceImage.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    styleReferenceBase64 = event.target.result;
+                    stylePreviewImg.src = styleReferenceBase64;
+                    styleImagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 取消按钮
+        document.getElementById('cancelStyleBtn').addEventListener('click', () => {
+            styleModal.style.display = 'none';
+            document.getElementById('generateImagesBtn').disabled = false;
+        });
+
+        // 确认按钮 - 开始生成
+        document.getElementById('confirmStyleBtn').addEventListener('click', async () => {
+            currentStyleSettings = {
+                brandName: document.getElementById('brandName').value,
+                colorScheme: colorScheme.value,
+                description: styleDescription.value,
+                referenceImage: styleReferenceBase64,
+                productImage: mainProductImageData || null
+            };
+            styleModal.style.display = 'none';
+            await startImageGeneration();
+        });
+
+        // ==================== 生成图片 ====================
+        document.getElementById('generateImagesBtn').addEventListener('click', async () => {
+            if (!currentOutline) {
+                alert('请先生成大纲');
+                return;
+            }
+
+            // 显示风格选择对话框
+            styleModal.style.display = 'flex';
+            styleDescription.value = '';
+            styleReferenceImage.value = '';
+            styleImagePreview.style.display = 'none';
+            styleReferenceBase64 = '';
+            colorScheme.value = 'auto';
+        });
+
+        // 终止生成相关变量
+        let abortController = null;
+        let isGenerating = false;
+
+        async function startImageGeneration() {
+            const btn = document.getElementById('generateImagesBtn');
+            const stopBtn = document.getElementById('stopGenerateBtn');
+            btn.disabled = true;
+            stopBtn.style.display = 'inline-block';
+            generatedImages = [];
+            isGenerating = true;
+            saveState();
+
+            // 创建 AbortController 用于终止请求
+            abortController = new AbortController();
+
+            try {
+                const startFrom = generatedImages.length > 0 ? generatedImages.length : 0;
+                const response = await fetch('/api/generate-images', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        outline: currentOutline,
+                        style: currentStyleSettings,
+                        start_from: startFrom,
+                        existing_images: startFrom > 0 ? generatedImages : []
+                    }),
+                    signal: abortController.signal
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const event = JSON.parse(line.slice(6));
+
+                                if (event.status === 'progress') {
+                                    mainStatus.textContent = `🎨 ${event.message}`;
+                                } else if (event.status === 'page_done') {
+                                    generatedImages.push(event.image);
+                                    updateGallery();
+                                    mainStatus.textContent = `🎨 ${event.message} (${generatedImages.length}张)`;
+                                    saveState();
+                                } else if (event.status === 'page_fail') {
+                                    mainStatus.textContent = `⚠️ ${event.message}`;
+                                } else if (event.status === 'done') {
+                                    generatedImages = event.images || generatedImages;
+                                    updateGallery();
+                                    mainStatus.textContent = `✅ ${event.message}`;
+                                    document.querySelector('[data-preview-tab="gallery"]').click();
+                                    saveState();
+                                } else if (event.status === 'error') {
+                                    mainStatus.textContent = `❌ ${event.message}`;
+                                } else if (event.status === 'stopped') {
+                                    mainStatus.textContent = `⏹ ${event.message}`;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    mainStatus.textContent = '⏹ 生成已终止';
+                } else {
+                    mainStatus.textContent = `❌ 生成失败: ${error.message}`;
+                }
+            }
+
+            isGenerating = false;
+            abortController = null;
+            btn.disabled = false;
+            stopBtn.style.display = 'none';
+        }
+
+        // 终止生成按钮事件
+        document.getElementById('stopGenerateBtn').addEventListener('click', () => {
+            if (abortController && isGenerating) {
+                abortController.abort();
+                mainStatus.textContent = '⏹ 正在终止...';
+            }
+        });
+
+        function updateGallery() {
+            const galleryGrid = document.getElementById('galleryGrid');
+            const currentPreview = document.getElementById('currentPreview');
+
+            if (generatedImages.length === 0) {
+                galleryGrid.innerHTML = '';
+                currentPreview.innerHTML = '<span>暂无预览</span>';
+                saveState();
+                return;
+            }
+            // 分页与缩略图大小
+            const pageSize = parseInt(document.getElementById('pageSize')?.value || '48', 10);
+            const totalPages = Math.max(1, Math.ceil(generatedImages.length / pageSize));
+            galleryPage = Math.min(galleryPage, totalPages - 1);
+            const start = galleryPage * pageSize;
+            const end = Math.min(generatedImages.length, start + pageSize);
+            const pageImages = generatedImages.slice(start, end);
+
+            document.getElementById('pageInfo').textContent = `${galleryPage + 1}/${totalPages}`;
+
+            // 更新画廊（索引显示全局序号）
+            galleryGrid.innerHTML = pageImages.map((img, i) => {
+                const globalIdx = start + i;
+                return `
+                <div class="gallery-item" onclick="showPreview(${globalIdx})">
+                    <img src="${img}" alt="图片${globalIdx + 1}">
+                    <div class="gallery-item-index">${globalIdx + 1}</div>
+                </div>`;
+            }).join('');
+
+            // 更新当前预览
+            showPreview(0);
+            saveState();
+        }
+
+        window.showPreview = function(index) {
+            const currentPreview = document.getElementById('currentPreview');
+            if (generatedImages[index]) {
+                currentPreview.innerHTML = `<img src="${generatedImages[index]}" alt="预览">`;
+            }
+        };
+
+        // ==================== 画廊交互：分页/缩略图大小/下载 ====================
+        let galleryPage = 0;
+        function applyThumbSize() {
+            const v = parseInt(document.getElementById('thumbSize')?.value || '260', 10);
+            document.documentElement.style.setProperty('--thumb-min', `${v}px`);
+        }
+        document.getElementById('thumbSize')?.addEventListener('input', () => {
+            applyThumbSize();
+        });
+        document.getElementById('pageSize')?.addEventListener('change', () => {
+            galleryPage = 0;
+            updateGallery();
+        });
+        document.getElementById('prevPageBtn')?.addEventListener('click', () => {
+            galleryPage = Math.max(0, galleryPage - 1);
+            updateGallery();
+        });
+        document.getElementById('nextPageBtn')?.addEventListener('click', () => {
+            const pageSize = parseInt(document.getElementById('pageSize')?.value || '48', 10);
+            const totalPages = Math.max(1, Math.ceil(generatedImages.length / pageSize));
+            galleryPage = Math.min(totalPages - 1, galleryPage + 1);
+            updateGallery();
+        });
+
+        // 初始化默认缩略图大小
+        applyThumbSize();
+
+        // 一键下载全部图片（zip）
+        document.getElementById('downloadImagesBtn')?.addEventListener('click', async () => {
+            if (!generatedImages || generatedImages.length === 0) return;
+            try {
+                mainStatus.textContent = '正在打包图片...';
+                const resp = await fetch('/api/download-images-zip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ images: generatedImages, outline: currentOutline })
+                });
+                const result = await resp.json();
+                if (result.status === 'success' && result.download_url) {
+                    const downloadLink = document.getElementById('downloadLink');
+                    downloadLink.href = result.download_url;
+                    downloadLink.classList.remove('hidden');
+                    mainStatus.textContent = '图片已打包，点击下载';
+                } else {
+                    mainStatus.textContent = '打包失败: ' + (result.message || '未知错误');
+                }
+            } catch (e) {
+                mainStatus.textContent = '打包失败: ' + e.message;
+            }
+        });
+
+        // ==================== Safari 访问链接展示 ====================
+        async function loadServerInfo() {
+            try {
+                const r = await fetch('/api/server-info');
+                const info = await r.json();
+                if (info.status === 'success' && info.lan_url) {
+                    const banner = document.getElementById('accessBanner');
+                    const lanUrl = document.getElementById('lanUrl');
+                    const openBtn = document.getElementById('openLanUrlBtn');
+                    lanUrl.textContent = info.lan_url;
+                    openBtn.href = info.lan_url;
+                    banner.style.display = 'flex';
+                }
+            } catch (e) {}
+        }
+        document.getElementById('copyLanUrlBtn')?.addEventListener('click', async () => {
+            try {
+                const text = document.getElementById('lanUrl')?.textContent || '';
+                await navigator.clipboard.writeText(text);
+                mainStatus.textContent = '已复制 Safari 地址';
+            } catch (e) {
+                mainStatus.textContent = '复制失败，请手动复制';
+            }
+        });
+        loadServerInfo();
+
+        // ==================== 导出PDF ====================
+        document.getElementById('exportPdfBtn').addEventListener('click', async () => {
+            if (generatedImages.length === 0) {
+                alert('请先生成图片');
+                return;
+            }
+
+            mainStatus.textContent = '正在生成PDF...';
+            const btn = document.getElementById('exportPdfBtn');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/download-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        images: generatedImages,
+                        outline: currentOutline
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('生成PDF失败: ' + response.statusText);
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = url;
+                downloadLink.download = (currentOutline && currentOutline.title ? currentOutline.title : 'StyleMind_PPT') + '.pdf';
+                downloadLink.classList.remove('hidden');
+
+                mainStatus.textContent = '✅ PDF 已生成，共 ' + generatedImages.length + ' 页';
+            } catch (error) {
+                mainStatus.textContent = '导出失败: ' + error.message;
+            }
+
+            btn.disabled = false;
+        });
+
+
+        // ==================== 知识库管理 ====================
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                selectedFile = files[0];
+                const sizeMB = (selectedFile.size / 1024 / 1024).toFixed(2);
+                document.getElementById('fileList').innerHTML = `
+                    <div style="padding: 12px 16px; background: var(--bg-main); border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 500;">${selectedFile.name}</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">${sizeMB} MB</div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="clearFile()">移除</button>
+                    </div>
+                `;
+                document.getElementById('importBtn').disabled = false;
+            }
+        }
+
+        window.clearFile = function() {
+            selectedFile = null;
+            document.getElementById('fileList').innerHTML = '';
+            document.getElementById('importBtn').disabled = true;
+            fileInput.value = '';
+        };
+
+        document.getElementById('importBtn').addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            progressContainer.style.display = 'block';
+            progressText.style.color = '';
+            progressText.style.whiteSpace = 'pre-wrap';
+            document.getElementById('importBtn').disabled = true;
+            progressFill.style.width = '0%';
+            progressText.textContent = '准备导入...';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/api/import', { method: 'POST', body: formData });
+
+                if (!response.ok) {
+                    progressText.textContent = `❌ 服务器错误: ${response.status}`;
+                    progressText.style.color = 'var(--error)';
+                    document.getElementById('importBtn').disabled = false;
+                    return;
+                }
+
+                // 用 ReadableStream 读取 SSE
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    // 解析 SSE data 行
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop(); // 保留不完整的行
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const event = JSON.parse(line.slice(6));
+
+                                // 更新进度条
+                                const percent = event.percent || 0;
+                                progressFill.style.width = `${percent}%`;
+
+                                // 更新状态文字
+                                const stageTag = event.stage ? `[${event.stage}] ` : '';
+                                progressText.textContent = `${stageTag}${event.message}`;
+
+                                // 完成事件
+                                if (event.stage === '完成' && event.extra && event.extra.result) {
+                                    const r = event.extra.result;
+                                    let finalMsg = `✅ 导入完成！\n`;
+                                    finalMsg += `📄 文件: ${r.file} (${r.size_mb}MB)\n`;
+                                    finalMsg += `📊 总页数: ${r.pages}\n`;
+                                    finalMsg += `🧠 LLM 分析: ${r.llm_analyzed} 页`;
+                                    if (r.split_count) {
+                                        finalMsg += `\n📦 自动拆分: ${r.split_count} 个文件`;
+                                    }
+                                    progressText.textContent = finalMsg;
+                                    updateKnowledgeStats();
+                                }
+
+                                // 错误事件
+                                if (event.stage === '错误') {
+                                    progressText.style.color = 'var(--error)';
+                                }
+                            } catch (e) {
+                                // JSON 解析失败，忽略
+                            }
+                        }
+                    }
+                }
+
+            } catch (error) {
+                progressText.textContent = `❌ 错误: ${error.message}`;
+                progressText.style.color = 'var(--error)';
+            }
+
+            document.getElementById('importBtn').disabled = false;
+        });
+
+        document.getElementById('viewKnowledgeBtn').addEventListener('click', async () => {
+            const statusBox = document.getElementById('knowledgeStatus');
+            statusBox.textContent = '加载中...';
+
+            try {
+                const response = await fetch('/api/knowledge/status');
+                const data = await response.json();
+
+                let text = `📚 知识库深度统计\n━━━━━━━━━━━━━━━━\n`;
+                text += `📊 总记录数: ${data.total_records} 条\n`;
+                text += `📁 来源文件: ${data.total_files} 个\n`;
+                text += `📝 有LLM分析: ${data.has_insights} 条\n\n`;
+
+                if (data.files) {
+                    text += `📂 文件详情:\n`;
+                    for (const [file, stats] of Object.entries(data.files)) {
+                        text += `  • ${file}: ${stats.total}页 (LLM:${stats.has_insights})\n`;
+                    }
+                }
+
+                statusBox.innerHTML = text.replace(/\n/g, '<br>');
+
+                // 添加删除按钮
+                if (data.files && Object.keys(data.files).length > 0) {
+                    const deleteDiv = document.createElement('div');
+                    deleteDiv.style.marginTop = '12px';
+                    deleteDiv.innerHTML = '<div style="margin-bottom:8px;font-weight:500;">🗑️ 删除单个文件:</div>';
+
+                    for (const file of Object.keys(data.files)) {
+                        const btn = document.createElement('button');
+                        btn.className = 'btn btn-secondary';
+                        btn.style.margin = '4px';
+                        btn.style.fontSize = '12px';
+                        btn.style.padding = '4px 8px';
+                        btn.textContent = `删除 ${file.substring(0, 20)}${file.length > 20 ? '...' : ''}`;
+                        btn.onclick = async () => {
+                            if (!confirm(`确定要删除 "${file}" 吗？`)) return;
+                            try {
+                                const resp = await fetch('/api/knowledge/delete', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ filename: file })
+                                });
+                                const result = await resp.json();
+                                if (result.status === 'success') {
+                                    alert('✅ ' + result.message);
+                                    document.getElementById('viewKnowledgeBtn').click();
+                                    updateKnowledgeStats();
+                                } else {
+                                    alert('❌ 删除失败: ' + result.message);
+                                }
+                            } catch (e) {
+                                alert('❌ 错误: ' + e.message);
+                            }
+                        };
+                        deleteDiv.appendChild(btn);
+                    }
+                    statusBox.appendChild(deleteDiv);
+                }
+            } catch (error) {
+                statusBox.textContent = `❌ 获取失败: ${error.message}`;
+            }
+        });
+
+        document.getElementById('clearKnowledgeBtn').addEventListener('click', async () => {
+            if (!confirm('确定要清空知识库吗？此操作不可恢复。')) return;
+
+            try {
+                const response = await fetch('/api/knowledge/clear', { method: 'POST' });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    alert('✅ 知识库已清空');
+                    updateKnowledgeStats();
+                } else {
+                    alert('❌ 清空失败: ' + result.message);
+                }
+            } catch (error) {
+                alert('❌ 错误: ' + error.message);
+            }
+        });
+
+        async function updateKnowledgeStats() {
+            try {
+                const response = await fetch('/api/knowledge/stats');
+                const data = await response.json();
+
+                document.getElementById('totalRecords').textContent = data.total_records || 0;
+                document.getElementById('totalFiles').textContent = data.total_files || 0;
+                document.getElementById('llmAnalyzed').textContent = data.has_insights || 0;
+            } catch (error) {
+                console.error('获取统计失败:', error);
+            }
+        }
+
+        // ==================== 设置 ====================
+        // 复制到全部按钮
+        document.getElementById('copyToAllBtn').addEventListener('click', () => {
+            const chatUrl = document.getElementById('chatApiUrl').value;
+            const chatKey = document.getElementById('chatApiKey').value;
+
+            if (!chatUrl || !chatKey) {
+                alert('请先填写对话模型的 API 信息');
+                return;
+            }
+
+            document.getElementById('imageApiUrl').value = chatUrl;
+            document.getElementById('imageApiKey').value = chatKey;
+            document.getElementById('embedApiUrl').value = chatUrl;
+            document.getElementById('embedApiKey').value = chatKey;
+
+            alert('✅ 已复制到图片生成和嵌入模型');
+        });
+
+        // 保存所有设置
+        document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+            const settings = {
+                // 对话模型
+                chat_api_base_url: document.getElementById('chatApiUrl').value,
+                chat_api_key: document.getElementById('chatApiKey').value,
+                chat_model: document.getElementById('chatModel').value,
+                // 图片生成模型
+                image_api_base_url: document.getElementById('imageApiUrl').value,
+                image_api_key: document.getElementById('imageApiKey').value,
+                image_model: document.getElementById('imageModel').value,
+                // 嵌入模型
+                embed_api_base_url: document.getElementById('embedApiUrl').value,
+                embed_api_key: document.getElementById('embedApiKey').value,
+                embed_model: document.getElementById('embedModel').value
+            };
+
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+
+                const result = await response.json();
+                alert(result.status === 'success' ? '✅ 设置已保存' : '❌ 保存失败: ' + result.message);
+            } catch (error) {
+                alert('❌ 错误: ' + error.message);
+            }
+        });
+
+        // 测试对话模型
+        document.getElementById('testChatBtn').addEventListener('click', async () => {
+            const resultBox = document.getElementById('chatTestResult');
+            resultBox.textContent = '测试中...';
+
+            try {
+                const response = await fetch('/api/test-connection', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        api_base_url: document.getElementById('chatApiUrl').value,
+                        api_key: document.getElementById('chatApiKey').value,
+                        model: document.getElementById('chatModel').value
+                    })
+                });
+
+                const result = await response.json();
+                resultBox.innerHTML = result.status === 'success'
+                    ? `<span style="color: var(--success);">✅ ${result.message}</span>`
+                    : `<span style="color: var(--error);">❌ ${result.message}</span>`;
+            } catch (error) {
+                resultBox.innerHTML = `<span style="color: var(--error);">❌ 测试失败: ${error.message}</span>`;
+            }
+        });
+
+        // 测试图片生成模型
+        document.getElementById('testImageBtn').addEventListener('click', async () => {
+            const resultBox = document.getElementById('imageTestResult');
+            resultBox.textContent = '测试中...';
+
+            try {
+                const response = await fetch('/api/test-connection', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        api_base_url: document.getElementById('imageApiUrl').value,
+                        api_key: document.getElementById('imageApiKey').value,
+                        model: document.getElementById('imageModel').value
+                    })
+                });
+
+                const result = await response.json();
+                resultBox.innerHTML = result.status === 'success'
+                    ? `<span style="color: var(--success);">✅ ${result.message}</span>`
+                    : `<span style="color: var(--error);">❌ ${result.message}</span>`;
+            } catch (error) {
+                resultBox.innerHTML = `<span style="color: var(--error);">❌ 测试失败: ${error.message}</span>`;
+            }
+        });
+
+        // 测试嵌入模型
+        document.getElementById('testEmbedBtn').addEventListener('click', async () => {
+            const resultBox = document.getElementById('embedTestResult');
+            resultBox.textContent = '测试中...';
+
+            try {
+                const response = await fetch('/api/test-connection', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        api_base_url: document.getElementById('embedApiUrl').value,
+                        api_key: document.getElementById('embedApiKey').value,
+                        model: document.getElementById('embedModel').value
+                    })
+                });
+
+                const result = await response.json();
+                resultBox.innerHTML = result.status === 'success'
+                    ? `<span style="color: var(--success);">✅ ${result.message}</span>`
+                    : `<span style="color: var(--error);">❌ ${result.message}</span>`;
+            } catch (error) {
+                resultBox.innerHTML = `<span style="color: var(--error);">❌ 测试失败: ${error.message}</span>`;
+            }
+        });
+
+        // ==================== 初始化 ====================
+        // 加载已保存的设置
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                const config = await response.json();
+
+                // 对话模型
+                if (config.chat_api_base_url) document.getElementById('chatApiUrl').value = config.chat_api_base_url;
+                if (config.chat_api_key) document.getElementById('chatApiKey').value = config.chat_api_key;
+                if (config.chat_model) document.getElementById('chatModel').value = config.chat_model;
+                // 图片生成模型
+                if (config.image_api_base_url) document.getElementById('imageApiUrl').value = config.image_api_base_url;
+                if (config.image_api_key) document.getElementById('imageApiKey').value = config.image_api_key;
+                if (config.image_model) document.getElementById('imageModel').value = config.image_model;
+                // 嵌入模型
+                if (config.embed_api_base_url) document.getElementById('embedApiUrl').value = config.embed_api_base_url;
+                if (config.embed_api_key) document.getElementById('embedApiKey').value = config.embed_api_key;
+                if (config.embed_model) document.getElementById('embedModel').value = config.embed_model;
+
+                // 兼容旧配置（单 API）
+                if (config.api_base_url && !config.chat_api_base_url) {
+                    document.getElementById('chatApiUrl').value = config.api_base_url;
+                    document.getElementById('imageApiUrl').value = config.api_base_url;
+                    document.getElementById('embedApiUrl').value = config.api_base_url;
+                }
+                if (config.api_key && !config.chat_api_key) {
+                    document.getElementById('chatApiKey').value = config.api_key;
+                    document.getElementById('imageApiKey').value = config.api_key;
+                    document.getElementById('embedApiKey').value = config.api_key;
+                }
+            } catch (e) {
+                console.error('加载设置失败:', e);
+            }
+        }
+
+        // 图片放大功能
+        const imageModal = document.createElement('div');
+        imageModal.className = 'image-modal';
+        imageModal.innerHTML = `
+            <span class="image-modal-close">&times;</span>
+            <img src="" alt="放大预览">
+        `;
+        document.body.appendChild(imageModal);
+
+        const modalImg = imageModal.querySelector('img');
+        const modalClose = imageModal.querySelector('.image-modal-close');
+
+        // 点击画廊图片放大
+        window.showPreview = function(index) {
+            const currentPreview = document.getElementById('currentPreview');
+            if (generatedImages[index]) {
+                currentPreview.innerHTML = `<img src="${generatedImages[index]}" alt="预览" onclick="openImageModal(${index})" style="cursor:zoom-in;">`;
+            }
+        };
+
+        window.openImageModal = function(index) {
+            if (generatedImages[index]) {
+                modalImg.src = generatedImages[index];
+                imageModal.classList.add('active');
+            }
+        };
+
+        // 点击关闭
+        imageModal.addEventListener('click', () => {
+            imageModal.classList.remove('active');
+        });
+        modalClose.addEventListener('click', () => {
+            imageModal.classList.remove('active');
+        });
+
+        loadSettings();
+        updateKnowledgeStats();
+    </script>
+</body>
+</html>

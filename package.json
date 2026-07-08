@@ -1,0 +1,13 @@
+{
+  "name": "stylemind-v2-renderer-spike",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Renderer spike dependencies for StyleMind v2 editable PPTX experiments.",
+  "scripts": {
+    "render:plan:pptxgenjs": "node scripts/render_plan_pptxgenjs.mjs"
+  },
+  "dependencies": {
+    "pptx-automizer": "^0.8.2",
+    "pptxgenjs": "^4.0.1"
+  }
+}

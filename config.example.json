@@ -1,0 +1,13 @@
+{
+  "api_base_url": "",
+  "api_key": "",
+  "chat_model": "gpt-4o",
+  "image_model": "gpt-image-2",
+  "embed_model": "text-embedding-3-small",
+  "chat_api_key": "",
+  "chat_api_base_url": "",
+  "image_api_key": "",
+  "image_api_base_url": "",
+  "embed_api_key": "",
+  "embed_api_base_url": ""
+}

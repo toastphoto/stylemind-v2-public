@@ -1,0 +1,43 @@
+# StyleMind v2 依赖
+# AI对话式PPT生成工具
+
+# Web框架
+gradio>=4.0.0
+flask>=3.0.0
+flask-cors>=4.0.0
+requests>=2.31.0
+flask>=3.0.0
+flask-cors>=4.0.0
+requests>=2.31.0
+
+# OpenAI API客户端
+openai>=1.0.0
+
+# HTTP客户端
+httpx>=0.25.0
+
+# PPT处理
+python-pptx>=0.6.21
+
+# PDF处理（三选一，优先级：pdfplumber > pymupdf > PyPDF2）
+pdfplumber>=0.10.0
+pymupdf>=1.23.0
+PyPDF2>=3.0.0
+
+# 图像处理
+pillow>=10.0.0
+
+# 数值计算
+numpy>=1.24.0
+
+# 数据验证
+pydantic>=2.0.0
+
+# 提示词工具（可选）
+rich>=13.0.0
+
+# V2 分层 PPT 转换（可选增强）
+opencv-python-headless>=4.9.0.80
+pytest>=8.0.0
+paddleocr>=2.7.3
+paddlepaddle>=2.6.0
