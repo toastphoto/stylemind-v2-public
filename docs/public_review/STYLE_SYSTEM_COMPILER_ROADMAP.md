@@ -39,6 +39,13 @@ The AI should not freely design every page. It should select and fill controlled
 - Reference-template-first remains the quality route when good editable templates exist.
 - PptxGenJS/python-pptx remain fallback or adapter routes, not product-facing design modes.
 
+Private implementation progress on 2026-07-08:
+
+- The private repo now has a first StylePack seed-library builder.
+- The private seed library links curated company reference sample pages, cleaned TemplateSkill candidates, and supplemental DashiAI-style component seeds.
+- The Agent workbench receives per-page StylePack matches in its planning payload.
+- The public repo does not include the private seed JSON or private reference assets.
+
 ## Main Decisions
 
 ### 1. Split Content From Visual Planning
@@ -80,7 +87,7 @@ Visual changes should be reviewed through side-by-side outputs:
 
 ## Next Small Build Targets
 
-1. Add a StylePack schema and private golden-sample manifest.
+1. Continue maturing the private StylePack seed library into real template-fit scoring and selectable workbench controls.
 2. Add a ContentPlan schema separate from RenderPlan.
 3. Promote template selection from scripts into the main workbench planning path.
 4. Show page role, StylePack, TemplateSkill, asset slots, and QA status in the workbench.
