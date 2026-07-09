@@ -53,7 +53,7 @@ Private implementation progress on 2026-07-08:
 - The private reference-template renderer now compacts orphan template slides/media after PPTX generation so template-copy outputs do not carry inactive source assets.
 - A live private smoke test confirmed selected-page QA can write back to a temporary outline session and reappear in the Agent planning payload; the same smoke confirmed the export path is not using a full-slide image-generation model for the QA state.
 - Persisted rendered QA is now compiled into a visual-review signal used by private TemplateSkill fit scoring and surfaced in the workbench manifest.
-- The private workbench now aggregates per-page visual-review state into deck-level QA risk counts for planning and prioritization.
+- The private workbench now aggregates per-page visual-review state into deck-level QA risk counts and a priority queue for planning and prioritization.
 - The public repo does not include the private seed JSON or private reference assets.
 
 ## Main Decisions
@@ -97,7 +97,7 @@ Visual changes should be reviewed through side-by-side outputs:
 
 ## Next Small Build Targets
 
-1. Use deck-level visual-review risk counts to prioritize rendered QA, asset generation, and TemplateSkill fixes.
+1. Wire deck-level visual-review priority actions into one-click rendered QA, asset generation, and TemplateSkill-fix workflows.
 2. Mature ContentPlan fit scoring against real reference templates without letting it choose visual templates directly.
 3. Promote template selection from scripts into the main workbench planning path.
 4. Improve visual fit and placeholder-capacity scoring using rendered QA evidence.
