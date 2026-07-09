@@ -1,6 +1,6 @@
 # StyleMind Public Review Roadmap
 
-Last updated: 2026-07-08
+Last updated: 2026-07-09
 
 ## What This Public Repo Is For
 
@@ -54,6 +54,7 @@ Private implementation progress on 2026-07-08:
 - A live private smoke test confirmed selected-page QA can write back to a temporary outline session and reappear in the Agent planning payload; the same smoke confirmed the export path is not using a full-slide image-generation model for the QA state.
 - Persisted rendered QA is now compiled into a visual-review signal used by private TemplateSkill fit scoring and surfaced in the workbench manifest.
 - The private workbench now aggregates per-page visual-review state into deck-level QA risk counts and a priority queue for planning and prioritization.
+- The private workbench now exposes a 95-point readiness summary that combines QA coverage, editability gates, asset coverage, TemplateSkill fit, and unresolved visual attention. This is a planning/readiness signal for human contact-sheet review, not an automatic claim that output has reached the final aesthetic target.
 - The public repo does not include the private seed JSON or private reference assets.
 
 ## Main Decisions
@@ -97,7 +98,7 @@ Visual changes should be reviewed through side-by-side outputs:
 
 ## Next Small Build Targets
 
-1. Wire deck-level visual-review priority actions into one-click rendered QA, asset generation, and TemplateSkill-fix workflows.
+1. Wire deck-level visual-review and 95-readiness priority actions into one-click rendered QA, asset generation, and TemplateSkill-fix workflows.
 2. Mature ContentPlan fit scoring against real reference templates without letting it choose visual templates directly.
 3. Promote template selection from scripts into the main workbench planning path.
 4. Improve visual fit and placeholder-capacity scoring using rendered QA evidence.
